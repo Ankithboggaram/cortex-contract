@@ -1,0 +1,15 @@
+# Python dev/runtime dependencies for cortex-contract's cross-language surface.
+#
+# Set up an isolated environment:
+#   python3 -m venv .venv
+#   .venv/bin/pip install -r requirements-dev.txt
+#
+# protobuf is the runtime for the protoc-generated *_pb2.py bindings (compiled
+# from proto/), which prove the Rust and Python sides speak byte-identical
+# The reason the payload is proto and not MessagePack is in (CORTEX.md §4).
+protobuf
+
+# Tooling mirroring Axon's Python toolchain (also available system-wide).
+ruff
+mypy
+pytest

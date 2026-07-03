@@ -1,0 +1,22 @@
+# Rust build artifacts
+/target
+
+# Cargo local config (commit an explicit config.toml if one is added)
+.cargo/*
+!.cargo/config.toml
+
+# Python cross-language surface: local venv + protoc-generated bindings
+.venv/
+__pycache__/
+*_pb2.py
+
+# Design / planning docs
+CORTEX.md
+PRD.md
+IMPLEMENTATION_README.md
+
+# Environment / editor / OS
+.DS_Store
+*.log
+.env
+.env.*

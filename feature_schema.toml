@@ -1,0 +1,68 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Cortex: canonical feature schema   (reference: fraud-velocity demo)
+#
+# THE contract for the feature vector. The ORDER of [[feature]] entries IS the
+# vector order: index N here == features[N] in every FeatureRecord, the online-
+# store value, and the offline Parquet columns.
+#
+# Consumed by:
+#   • Dendrite: emits features in this order; dendrite-compute validates its
+#              computation config ([[features]] kind/window) against these names.
+#   • Axon    : model input width must equal the entry count below; rejects any
+#              FeatureRecord whose schema_version != `version`.
+#   • Synapse : training columns / feature-importance names; stamps trained
+#              models with this `version`.
+#
+# Rules:
+#   • Append-or-bump: never reorder or repurpose an index in place. Any change to
+#     names, order, or count is a NEW `version` (and a model retrained against it).
+#   • All features are f32 (FeatureRecord.features is protobuf `repeated float`).
+#
+# Deployments copy this file and define their own features; this is the reference.
+# ─────────────────────────────────────────────────────────────────────────────
+
+version = 1
+
+# Transaction-velocity features. The computation for each (aggregation kind +
+# window) lives in dendrite-compute's config; this file fixes only the contract:
+# name, dtype, and order.
+
+[[feature]]                 # index 0
+name  = "txn_count_1m"
+dtype = "f32"
+# dendrite-compute: kind = "count", window_secs = 60
+
+[[feature]]                 # index 1
+name  = "txn_count_5m"
+dtype = "f32"
+# dendrite-compute: kind = "count", window_secs = 300
+
+[[feature]]                 # index 2
+name  = "txn_count_1h"
+dtype = "f32"
+# dendrite-compute: kind = "count", window_secs = 3600
+
+[[feature]]                 # index 3
+name  = "amount_sum_1m"
+dtype = "f32"
+# dendrite-compute: kind = "sum", field = "amount", window_secs = 60
+
+[[feature]]                 # index 4
+name  = "amount_sum_1h"
+dtype = "f32"
+# dendrite-compute: kind = "sum", field = "amount", window_secs = 3600
+
+[[feature]]                 # index 5
+name  = "amount_avg_1h"
+dtype = "f32"
+# dendrite-compute: kind = "avg", field = "amount", window_secs = 3600
+
+[[feature]]                 # index 6
+name  = "amount_min_1h"
+dtype = "f32"
+# dendrite-compute: kind = "min", field = "amount", window_secs = 3600
+
+[[feature]]                 # index 7
+name  = "amount_max_1h"
+dtype = "f32"
+# dendrite-compute: kind = "max", field = "amount", window_secs = 3600
