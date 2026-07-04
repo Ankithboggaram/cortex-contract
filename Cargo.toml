@@ -17,7 +17,13 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
 default = ["redis"]
-redis = ["dep:deadpool-redis", "dep:async-trait", "dep:tokio"]
+redis = [
+    "dep:deadpool-redis",
+    "dep:async-trait",
+    "dep:tokio",
+    "dep:futures-util",
+    "dep:tokio-stream",
+]
 
 [dependencies]
 # --- wire format (core; always compiled) ---
@@ -31,10 +37,12 @@ thiserror = "2"
 # --- redis backend (feature = "redis") ---
 deadpool-redis = { version = "0.18", optional = true, features = ["rt_tokio_1"] }
 async-trait = { version = "0.1", optional = true }
-tokio = { version = "1", optional = true, features = ["rt-multi-thread", "macros"] }
+tokio = { version = "1", optional = true, features = ["rt-multi-thread", "macros", "time"] }
+futures-util = { version = "0.3", optional = true }
+tokio-stream = { version = "0.1", optional = true }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "test-util"] }
 
 [build-dependencies]
 prost-build = "0.13"

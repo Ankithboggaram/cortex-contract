@@ -10,7 +10,9 @@ pub mod error;
 pub mod keys;
 pub mod record;
 pub mod schema;
+#[cfg(feature = "redis")]
+pub mod store;
 
-pub use error::{CodecError, SchemaError};
+pub use error::{CodecError, SchemaError, StoreError};
 pub use record::{FeatureRecord, PredictionRecord};
 pub use schema::{FeatureSchema, FeatureSpec};

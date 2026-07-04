@@ -41,6 +41,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   platform's single serialization chokepoint (PRD.md §4.3), verified
   allocation-free after warmup by capacity- and pointer-stability tests, not
   just round-trip correctness. `CodecError` joins the shared error taxonomy.
+- `store` module (`src/store/`, `feature = "redis"`): paired `OnlineStoreWriter`
+  (Dendrite-sink) / `OnlineStoreReader` (Axon) traits, `RecordHeader`,
+  `FetchResult`, `UpdateStream`, and the `OnlineBackend` config enum (PRD.md
+  §4.4). `RedisOnlineStore` relocates Axon's `RedisStore` read half and adds
+  the write half (`SET`/`PUBLISH`), now speaking `FeatureRecord` protobuf
+  instead of `rmp_serde(Vec<f32>)`. `fetch` decodes via a `Mutex`-guarded
+  scratch `FeatureRecord` (zero-alloc after warmup, per PRD.md §4.4's explicit
+  requirement for this method); `write` uses the simpler allocating `encode`,
+  since the PRD makes no equivalent zero-alloc demand of the write path.
+  `StoreError` joins the shared error taxonomy. Both traits are verified
+  dyn-compatible (`Arc<dyn OnlineStoreReader>`/`Arc<dyn OnlineStoreWriter>`),
+  matching how Axon holds its store. No live-Redis tests, matching Axon's own
+  `RedisStore`, which has none either.
 
 ### Fixed
 
