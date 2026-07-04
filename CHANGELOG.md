@@ -36,6 +36,11 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `DEFAULT_KEY_PREFIX` — the only place these key/channel string formats exist
   in the platform, resolving the historical `features:updates:` vs
   `axon:updates:` drift (PRD.md §4.2).
+- `codec` module (`src/codec.rs`): `encode`/`decode` plus the zero-alloc
+  `encode_into`/`decode_into` (clear + `prost` merge, capacity retained) — the
+  platform's single serialization chokepoint (PRD.md §4.3), verified
+  allocation-free after warmup by capacity- and pointer-stability tests, not
+  just round-trip correctness. `CodecError` joins the shared error taxonomy.
 
 ### Fixed
 

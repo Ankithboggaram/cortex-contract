@@ -5,8 +5,18 @@
 //!
 //! Each enum corresponds to one subsystem:
 //! - [`SchemaError`] - feature schema loading and validation
+//! - [`CodecError`]  - protobuf encode/decode (see [`crate::codec`])
 
 use thiserror::Error;
+
+/// Errors from encoding or decoding a message via [`crate::codec`].
+#[non_exhaustive]
+#[derive(Debug, Error)]
+pub enum CodecError {
+    /// `bytes` was not a valid protobuf encoding of the target message.
+    #[error("failed to decode protobuf message: {0}")]
+    Decode(#[from] prost::DecodeError),
+}
 
 /// Errors from loading or validating a [`FeatureSchema`](crate::schema::FeatureSchema).
 #[non_exhaustive]
@@ -70,6 +80,16 @@ mod tests {
     fn io_error_is_source_chained() {
         let io = std::io::Error::new(std::io::ErrorKind::NotFound, "no such file");
         let e = SchemaError::Io(io);
+        assert!(std::error::Error::source(&e).is_some());
+    }
+
+    #[test]
+    fn codec_decode_error_is_source_chained() {
+        use prost::Message as _;
+
+        let garbage = [0xFFu8; 10];
+        let decode_err = crate::record::FeatureRecord::decode(garbage.as_slice()).unwrap_err();
+        let e = CodecError::Decode(decode_err);
         assert!(std::error::Error::source(&e).is_some());
     }
 }

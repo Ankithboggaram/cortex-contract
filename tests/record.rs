@@ -1,8 +1,9 @@
 //! Round-trip tests for the prost-generated `FeatureRecord` / `PredictionRecord`.
 //!
-//! These exercise plain `prost::Message` encode/decode directly — the future
-//! `codec` module (PRD.md §4.3) wraps the same calls with the zero-alloc
-//! `decode_into` API; this test only proves the generated types are correct.
+//! These exercise plain `prost::Message` encode/decode directly — the `codec`
+//! module (PRD.md §4.3, `src/codec.rs`) wraps the same calls with the
+//! zero-alloc `decode_into` API; this test only proves the generated types
+//! are correct.
 
 use cortex_contract::{FeatureRecord, PredictionRecord};
 use prost::Message;
