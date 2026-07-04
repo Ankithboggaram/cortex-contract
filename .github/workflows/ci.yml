@@ -64,8 +64,11 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           save-if: ${{ github.ref == 'refs/heads/main' }}
-      - name: Run tests
+      - name: Run tests (all features)
         run: cargo test --all-targets --all-features
+      # Guard the data-contract-only build Synapse uses (no async, no store backend).
+      - name: Run tests (no default features)
+        run: cargo test --all-targets --no-default-features
 
   test-msrv:
     name: Test (MSRV 1.85)
@@ -80,8 +83,10 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           save-if: ${{ github.ref == 'refs/heads/main' }}
-      - name: Run tests
+      - name: Run tests (all features)
         run: cargo test --all-targets --all-features
+      - name: Run tests (no default features)
+        run: cargo test --all-targets --no-default-features
 
   docs:
     name: Docs
@@ -98,3 +103,28 @@ jobs:
         run: cargo doc --no-deps --all-features
         env:
           RUSTDOCFLAGS: "-D warnings"
+
+  python:
+    name: Python (cross-language contract)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install protoc
+        run: sudo apt-get install -y protobuf-compiler
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Python dependencies
+        run: pip install -r requirements-dev.txt
+      - name: Lint (ruff)
+        run: |
+          ruff check scripts/
+          ruff format --check scripts/
+      # The reason the payload is Protobuf and not MessagePack (CORTEX.md §4):
+      # proves Rust and Python encode/decode byte-identical bytes, floats included.
+      - name: Cross-language round-trip
+        run: python scripts/check_roundtrip.py

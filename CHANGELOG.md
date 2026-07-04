@@ -23,3 +23,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - `scripts/check_roundtrip.py` + the `roundtrip_fixture` example: proves Rust
   and Python encode/decode byte-identical Protobuf, floats compared bit-exact
   by their 32-bit representation.
+- CI: `test` and `test-msrv` also run under `--no-default-features` (the
+  Synapse build path); a new `python` job lints `scripts/` with ruff and runs
+  the cross-language round-trip, unlike Axon's CI, this crate's Python surface
+  proves a core correctness guarantee rather than seeding a demo.
