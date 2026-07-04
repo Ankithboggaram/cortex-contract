@@ -32,6 +32,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `names()`, and `validate(record_version, vector_len)` — the train/serve-skew
   and tensor-width guard (CORTEX.md §3.1). `SchemaError` (`src/error.rs`) is
   the first entry in the shared error taxonomy (PRD.md §4.5).
+- `keys` module (`src/keys.rs`): `feature_key`, `update_channel`, and
+  `DEFAULT_KEY_PREFIX` — the only place these key/channel string formats exist
+  in the platform, resolving the historical `features:updates:` vs
+  `axon:updates:` drift (PRD.md §4.2).
 
 ### Fixed
 

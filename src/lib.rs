@@ -6,6 +6,7 @@
 //! all depend on. No business logic — pure contract.
 
 pub mod error;
+pub mod keys;
 pub mod record;
 pub mod schema;
 
