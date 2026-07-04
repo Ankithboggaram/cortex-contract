@@ -1,6 +1,6 @@
 //! The online-store keyspace and freshness channel (PRD.md §4.2).
 //!
-//! The only place these string formats exist in the platform — Dendrite
+//! The only place these string formats exist in the platform. Dendrite
 //! (writer) and Axon (reader) both call through here instead of hardcoding
 //! `{prefix}:{entity_id}` literals, which is what caused the historical
 //! `features:updates:` vs `axon:updates:` drift this module resolves.

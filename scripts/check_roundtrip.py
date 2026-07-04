@@ -53,7 +53,7 @@ PREDICTION_RECORD: dict[str, Any] = {
 
 
 def f32_hex(value: float) -> str:
-    """The 8-hex-digit IEEE-754 bit pattern of `value` narrowed to f32 —
+    """The 8-hex-digit IEEE-754 bit pattern of `value` narrowed to f32:
     matches the format `roundtrip_fixture`'s decode mode prints."""
     (bits,) = struct.unpack("<I", struct.pack("<f", value))
     return format(bits, "08x")

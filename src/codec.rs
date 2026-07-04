@@ -1,4 +1,4 @@
-//! Protobuf encode/decode — the platform's single serialization chokepoint
+//! Protobuf encode/decode: the platform's single serialization chokepoint
 //! (PRD.md §4.3). Every feature payload crosses this module exactly once, on
 //! both Axon's read hot path and Dendrite's write hot path, so its two hot
 //! functions ([`encode_into`], [`decode_into`]) are allocation-free after warmup.
@@ -40,11 +40,11 @@ pub fn decode(bytes: &[u8]) -> Result<FeatureRecord, CodecError> {
     Ok(FeatureRecord::decode(bytes)?)
 }
 
-/// Decodes `bytes` into `rec` in place — the hot-path decode.
+/// Decodes `bytes` into `rec` in place: the hot-path decode.
 ///
 /// Clears `rec` (retaining its `features` `Vec`'s capacity) and merges
 /// `bytes` into it. Once `rec` has been warmed up by a decode at least as
-/// wide as every subsequent one, this allocates nothing — the guarantee that
+/// wide as every subsequent one, this allocates nothing: the guarantee that
 /// keeps Axon's read path allocation-free (PRD.md §6).
 ///
 /// # Errors

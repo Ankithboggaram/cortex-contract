@@ -32,7 +32,7 @@ pub enum SchemaError {
     Parse(#[from] toml::de::Error),
 
     /// A `FeatureRecord`'s `schema_version` does not match this schema's
-    /// `version` — the train/serve skew guard (CORTEX.md §3.1).
+    /// `version`, the train/serve skew guard (CORTEX.md §3.1).
     #[error("schema version mismatch: expected {expected}, got {got}")]
     VersionMismatch {
         /// The schema's own `version`.

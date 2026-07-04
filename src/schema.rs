@@ -7,7 +7,7 @@
 //! against it, and Synapse reads these as its training column names.
 //!
 //! Rule (enforced by convention, not by this type): append-or-bump. Never
-//! reorder or repurpose an index in place — any change to names, order, or
+//! reorder or repurpose an index in place; any change to names, order, or
 //! count is a new `version`.
 
 use std::path::Path;
@@ -31,7 +31,7 @@ pub struct FeatureSpec {
 
 /// The versioned, ordered feature schema loaded from a TOML file.
 ///
-/// The `[[feature]]` array's order in the source TOML is preserved here —
+/// The `[[feature]]` array's order in the source TOML is preserved here:
 /// `features[N]` is the schema's own index N, matching `FeatureRecord.features[N]`.
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct FeatureSchema {
@@ -55,7 +55,7 @@ impl FeatureSchema {
         Ok(schema)
     }
 
-    /// The number of features in the vector — the required length of
+    /// The number of features in the vector: the required length of
     /// `FeatureRecord.features` under this schema.
     #[must_use]
     pub fn width(&self) -> usize {
@@ -71,7 +71,7 @@ impl FeatureSchema {
     /// schema.
     ///
     /// Checks version before width, so a version mismatch is reported even
-    /// when the vector happens to also be the wrong length — the more
+    /// when the vector happens to also be the wrong length: the more
     /// specific, more actionable error of the two (CORTEX.md §3.1).
     ///
     /// # Errors

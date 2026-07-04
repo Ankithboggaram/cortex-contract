@@ -1,5 +1,5 @@
 //! Tests for `FeatureSchema` against the real reference `feature_schema.toml`
-//! (not a fixture) — this file *is* the contract every other test should load.
+//! (not a fixture): this file *is* the contract every other test should load.
 
 use cortex_contract::{FeatureSchema, SchemaError};
 

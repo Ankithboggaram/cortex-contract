@@ -23,7 +23,7 @@ use crate::record::FeatureRecord;
 pub mod redis;
 
 /// The non-feature metadata of a stored [`FeatureRecord`], filled in by
-/// [`OnlineStoreReader::fetch`] alongside the feature vector itself — the
+/// [`OnlineStoreReader::fetch`] alongside the feature vector itself: the
 /// header Axon needs for the freshness and schema-version checks
 /// (CORTEX.md §3.1) without decoding a whole `FeatureRecord` at the call site.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -45,7 +45,7 @@ pub enum FetchResult {
 }
 
 /// A stream that yields `()` each time fresh features may be available for
-/// an entity — either pushed by the backend (e.g. Redis pub/sub) or, via the
+/// an entity: either pushed by the backend (e.g. Redis pub/sub) or, via the
 /// default polling fallback, on a fixed timer.
 pub type UpdateStream = Pin<Box<dyn Stream<Item = ()> + Send>>;
 
@@ -88,7 +88,7 @@ pub trait OnlineStoreReader: Send + Sync {
     /// Returns a stream that yields `()` each time new features may be
     /// available for `entity_id`.
     ///
-    /// The default implementation polls on `poll_interval` — correct for any
+    /// The default implementation polls on `poll_interval`: correct for any
     /// backend, but wasteful for one with push notifications. A backend with
     /// pub/sub (e.g. Redis) should override this to yield only on an actual
     /// update.
@@ -169,7 +169,7 @@ mod tests {
     }
 
     /// A minimal in-memory reader exercising only the trait's default
-    /// `updates` polling fallback — no backend, no network.
+    /// `updates` polling fallback: no backend, no network.
     struct PollingOnlyReader;
 
     #[async_trait]

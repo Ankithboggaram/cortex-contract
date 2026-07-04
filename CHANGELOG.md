@@ -29,15 +29,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   proves a core correctness guarantee rather than seeding a demo.
 - `FeatureSchema` / `FeatureSpec` (`src/schema.rs`): loads the versioned,
   ordered feature schema from TOML (`from_toml`), exposes `width()` and
-  `names()`, and `validate(record_version, vector_len)` — the train/serve-skew
+  `names()`, and `validate(record_version, vector_len)`, the train/serve-skew
   and tensor-width guard (CORTEX.md §3.1). `SchemaError` (`src/error.rs`) is
   the first entry in the shared error taxonomy (PRD.md §4.5).
 - `keys` module (`src/keys.rs`): `feature_key`, `update_channel`, and
-  `DEFAULT_KEY_PREFIX` — the only place these key/channel string formats exist
+  `DEFAULT_KEY_PREFIX`, the only place these key/channel string formats exist
   in the platform, resolving the historical `features:updates:` vs
   `axon:updates:` drift (PRD.md §4.2).
 - `codec` module (`src/codec.rs`): `encode`/`decode` plus the zero-alloc
-  `encode_into`/`decode_into` (clear + `prost` merge, capacity retained) — the
+  `encode_into`/`decode_into` (clear + `prost` merge, capacity retained), the
   platform's single serialization chokepoint (PRD.md §4.3), verified
   allocation-free after warmup by capacity- and pointer-stability tests, not
   just round-trip correctness. `CodecError` joins the shared error taxonomy.
@@ -59,5 +59,5 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 - Moved `proto/*.proto` to `proto/cortex/contract/v1/` to satisfy buf's
   `PACKAGE_DIRECTORY_MATCH` lint rule (package `cortex.contract.v1` must live
-  under a matching directory relative to the module root) — mirrors Axon's own
+  under a matching directory relative to the module root), mirrors Axon's own
   `proto/axon/inference/v1/inference.proto` layout.
