@@ -212,7 +212,9 @@ def main() -> None:
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
-        pb2_dir = str(tmp_path)
+        # protoc mirrors each .proto's path relative to -I into the output dir,
+        # so package cortex.contract.v1 lands under <tmp>/cortex/contract/v1/.
+        pb2_dir = str(tmp_path / "cortex" / "contract" / "v1")
 
         run(
             [
@@ -220,8 +222,8 @@ def main() -> None:
                 f"--python_out={tmp}",
                 "-I",
                 "proto",
-                "proto/feature_record.proto",
-                "proto/prediction_record.proto",
+                "proto/cortex/contract/v1/feature_record.proto",
+                "proto/cortex/contract/v1/prediction_record.proto",
             ]
         )
 

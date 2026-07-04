@@ -27,3 +27,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   Synapse build path); a new `python` job lints `scripts/` with ruff and runs
   the cross-language round-trip, unlike Axon's CI, this crate's Python surface
   proves a core correctness guarantee rather than seeding a demo.
+- `FeatureSchema` / `FeatureSpec` (`src/schema.rs`): loads the versioned,
+  ordered feature schema from TOML (`from_toml`), exposes `width()` and
+  `names()`, and `validate(record_version, vector_len)` — the train/serve-skew
+  and tensor-width guard (CORTEX.md §3.1). `SchemaError` (`src/error.rs`) is
+  the first entry in the shared error taxonomy (PRD.md §4.5).
+
+### Fixed
+
+- Moved `proto/*.proto` to `proto/cortex/contract/v1/` to satisfy buf's
+  `PACKAGE_DIRECTORY_MATCH` lint rule (package `cortex.contract.v1` must live
+  under a matching directory relative to the module root) — mirrors Axon's own
+  `proto/axon/inference/v1/inference.proto` layout.
