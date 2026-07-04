@@ -5,6 +5,10 @@
 //! traits that Axon (serving), Dendrite (features), and Synapse (training)
 //! all depend on. No business logic — pure contract.
 
+pub mod error;
 pub mod record;
+pub mod schema;
 
+pub use error::SchemaError;
 pub use record::{FeatureRecord, PredictionRecord};
+pub use schema::{FeatureSchema, FeatureSpec};
