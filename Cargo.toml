@@ -1,0 +1,40 @@
+[package]
+name = "cortex-contract"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+description = "The shared contract for the Cortex real-time ML platform: feature payload, schema, keyspace, codec, and online-store traits."
+repository = "https://github.com/Ankithboggaram/cortex-contract"
+homepage = "https://github.com/Ankithboggaram/cortex-contract"
+readme = "README.md"
+keywords = ["machine-learning", "feature-store", "protobuf", "contract"]
+categories = ["science", "data-structures", "encoding"]
+rust-version = "1.85"
+
+[package.metadata.docs.rs]
+all-features = false
+rustdoc-args = ["--cfg", "docsrs"]
+
+[features]
+default = ["redis"]
+redis = ["dep:deadpool-redis", "dep:async-trait", "dep:tokio"]
+
+[dependencies]
+# --- wire format (core; always compiled) ---
+prost = "0.13"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+
+# --- error handling (core) ---
+thiserror = "2"
+
+# --- redis backend (feature = "redis") ---
+deadpool-redis = { version = "0.18", optional = true, features = ["rt_tokio_1"] }
+async-trait = { version = "0.1", optional = true }
+tokio = { version = "1", optional = true, features = ["rt-multi-thread", "macros"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+
+[build-dependencies]
+prost-build = "0.13"

@@ -5,7 +5,7 @@ package cortex.contract.v1;
 // The canonical feature payload. See PRD.md §3 and CORTEX.md §4.
 //
 // The `features` array order is governed by feature_schema.toml: index N here ==
-// the Nth [[feature]] entry there. This same record is the `features` Kafka topic
+// the Nth `[[feature]]` entry there. This same record is the `features` Kafka topic
 // value, the online-store value, and (expanded to columns) the offline Parquet row.
 //
 // Generated into Rust via prost (build.rs) and Python via protoc. one definition,

@@ -1,6 +1,12 @@
 # Rust build artifacts
 /target
 
+# This is a library (no main.rs) consumed as a git dependency by Axon, Dendrite,
+# and Synapse; per Rust convention, libraries don't commit Cargo.lock so each
+# consumer resolves its own dependency graph. (Axon commits its lock file — it's
+# a binary, a different case.)
+Cargo.lock
+
 # Cargo local config (commit an explicit config.toml if one is added)
 .cargo/*
 !.cargo/config.toml
