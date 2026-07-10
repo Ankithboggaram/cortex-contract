@@ -23,6 +23,7 @@ redis = [
     "dep:tokio",
     "dep:futures-util",
     "dep:tokio-stream",
+    "dep:tracing",
 ]
 
 [dependencies]
@@ -40,6 +41,7 @@ async-trait = { version = "0.1", optional = true }
 tokio = { version = "1", optional = true, features = ["rt-multi-thread", "macros", "time"] }
 futures-util = { version = "0.3", optional = true }
 tokio-stream = { version = "0.1", optional = true }
+tracing = { version = "0.1", optional = true }
 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "test-util"] }

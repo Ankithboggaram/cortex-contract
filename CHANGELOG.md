@@ -11,6 +11,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added
+
+**Online store**
+
+- `OnlineStoreWriter::write_and_notify`, a new trait method (default-implemented as sequential
+  `write` then `notify`, so no existing implementor needs to change) that lets a backend combine
+  both into a single round trip. `RedisOnlineStore` overrides it to pipeline `SET` and `PUBLISH`
+  into one network exchange instead of two, while preserving the exact existing failure semantics:
+  a failed `SET` is still a hard error (nothing was durably written), a failed `PUBLISH` is still
+  non-fatal (the record is safely written; the reader just falls back to polling) — verified by
+  inspecting each pipelined command's individual reply rather than treating the pipeline as
+  succeed-or-fail-together.
+
+### Fixed
+
+- Updated `num-bigint` (transitive, via `redis`) off a yanked `0.4.7` to `0.4.8`
+
 ## [0.1.0] - 2026-07-03
 
 ### Added

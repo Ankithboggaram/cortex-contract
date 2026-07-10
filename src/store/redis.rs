@@ -130,6 +130,79 @@ impl OnlineStoreWriter for RedisOnlineStore {
         Ok(())
     }
 
+    async fn write_and_notify(
+        &self,
+        entity_id: &str,
+        rec: &FeatureRecord,
+    ) -> Result<(), StoreError> {
+        use deadpool_redis::redis::Value;
+
+        let key = feature_key(&self.key_prefix, entity_id);
+        let channel = update_channel(&self.key_prefix, entity_id);
+        let bytes = codec::encode(rec);
+
+        let mut conn =
+            self.pool.get().await.map_err(|e| {
+                StoreError::Connection(format!("failed to get Redis connection: {e}"))
+            })?;
+
+        // Not `.atomic()`: MULTI/EXEC buys atomicity we don't need and
+        // don't want (a partial SET-without-PUBLISH is fine; see below).
+        // A plain pipeline still sends both commands in one network
+        // round trip, which is the only property this is here for.
+        let reply: Value = deadpool_redis::redis::pipe()
+            .cmd("SET")
+            .arg(&key)
+            .arg(bytes)
+            .cmd("PUBLISH")
+            .arg(&channel)
+            .arg(entity_id)
+            .query_async(&mut conn)
+            .await
+            .map_err(|e| StoreError::Write {
+                entity_id: entity_id.to_owned(),
+                reason: format!("Redis SET+PUBLISH pipeline failed: {e}"),
+            })?;
+
+        let Value::Array(replies) = reply else {
+            return Err(StoreError::Write {
+                entity_id: entity_id.to_owned(),
+                reason: "Redis pipeline returned an unexpected reply shape".to_owned(),
+            });
+        };
+        let [set_reply, publish_reply] = replies.as_slice() else {
+            return Err(StoreError::Write {
+                entity_id: entity_id.to_owned(),
+                reason: format!(
+                    "Redis pipeline returned {} replies, expected 2",
+                    replies.len()
+                ),
+            });
+        };
+
+        // The SET failing is fatal, same as `write` alone: the record was
+        // never durably stored, so the caller must not commit.
+        if let Value::ServerError(e) = set_reply {
+            return Err(StoreError::Write {
+                entity_id: entity_id.to_owned(),
+                reason: format!("Redis SET failed: {e:?}"),
+            });
+        }
+
+        // The PUBLISH failing is not fatal, same as `notify` alone: the
+        // record is already durably stored, so the reader just falls back
+        // to polling instead of waking instantly.
+        if let Value::ServerError(e) = publish_reply {
+            tracing::warn!(
+                %entity_id,
+                error = ?e,
+                "freshness notification failed; reader may fall back to polling"
+            );
+        }
+
+        Ok(())
+    }
+
     async fn ping(&self) -> Result<(), StoreError> {
         self.ping_impl().await
     }

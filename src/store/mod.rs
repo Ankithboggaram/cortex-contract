@@ -61,6 +61,27 @@ pub trait OnlineStoreWriter: Send + Sync {
     /// then rely on [`OnlineStoreReader::updates`]'s default polling.
     async fn notify(&self, entity_id: &str) -> Result<(), StoreError>;
 
+    /// Writes `rec` and notifies subscribers together, in one round trip
+    /// where the backend can combine them (Redis: `SET` and `PUBLISH`
+    /// pipelined into a single network exchange). Backends that can't
+    /// combine the two fall back to this default, which simply calls
+    /// [`write`](Self::write) then [`notify`](Self::notify) in sequence —
+    /// correct either way, just without the round-trip savings.
+    ///
+    /// A notification failure alone does not make this return an error: the
+    /// record is durably written either way, so it is safe to commit;
+    /// mirrors [`notify`](Self::notify)'s own standalone contract, where a
+    /// notify failure only degrades the reader to its polling fallback.
+    async fn write_and_notify(
+        &self,
+        entity_id: &str,
+        rec: &FeatureRecord,
+    ) -> Result<(), StoreError> {
+        self.write(entity_id, rec).await?;
+        let _ = self.notify(entity_id).await;
+        Ok(())
+    }
+
     /// Checks that the store is reachable. Must not modify any store data.
     async fn ping(&self) -> Result<(), StoreError>;
 }
@@ -125,7 +146,89 @@ fn default_key_prefix() -> String {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+
     use super::*;
+
+    #[derive(Default)]
+    struct FakeWriter {
+        write_should_fail: bool,
+        notify_should_fail: bool,
+        write_calls: AtomicUsize,
+        notify_calls: AtomicUsize,
+    }
+
+    #[async_trait]
+    impl OnlineStoreWriter for FakeWriter {
+        async fn write(&self, entity_id: &str, _rec: &FeatureRecord) -> Result<(), StoreError> {
+            self.write_calls.fetch_add(1, Ordering::SeqCst);
+            if self.write_should_fail {
+                Err(StoreError::Write {
+                    entity_id: entity_id.to_owned(),
+                    reason: "simulated failure".into(),
+                })
+            } else {
+                Ok(())
+            }
+        }
+
+        async fn notify(&self, entity_id: &str) -> Result<(), StoreError> {
+            self.notify_calls.fetch_add(1, Ordering::SeqCst);
+            if self.notify_should_fail {
+                Err(StoreError::Notify {
+                    entity_id: entity_id.to_owned(),
+                    reason: "simulated failure".into(),
+                })
+            } else {
+                Ok(())
+            }
+        }
+
+        async fn ping(&self) -> Result<(), StoreError> {
+            Ok(())
+        }
+    }
+
+    fn sample_record() -> FeatureRecord {
+        FeatureRecord {
+            schema_version: 1,
+            event_time_ms: 0,
+            features: vec![1.0, 2.0],
+        }
+    }
+
+    #[tokio::test]
+    async fn default_write_and_notify_calls_both_in_order() {
+        let writer = FakeWriter::default();
+        let result = writer.write_and_notify("e1", &sample_record()).await;
+        assert!(result.is_ok());
+        assert_eq!(writer.write_calls.load(Ordering::SeqCst), 1);
+        assert_eq!(writer.notify_calls.load(Ordering::SeqCst), 1);
+    }
+
+    #[tokio::test]
+    async fn default_write_and_notify_propagates_a_write_failure() {
+        let writer = FakeWriter {
+            write_should_fail: true,
+            ..Default::default()
+        };
+        let result = writer.write_and_notify("e1", &sample_record()).await;
+        assert!(result.is_err());
+        // A failed write must never be followed by a notify: there is
+        // nothing fresh to tell a reader about.
+        assert_eq!(writer.notify_calls.load(Ordering::SeqCst), 0);
+    }
+
+    #[tokio::test]
+    async fn default_write_and_notify_tolerates_a_notify_failure() {
+        let writer = FakeWriter {
+            notify_should_fail: true,
+            ..Default::default()
+        };
+        let result = writer.write_and_notify("e1", &sample_record()).await;
+        assert!(result.is_ok());
+        assert_eq!(writer.write_calls.load(Ordering::SeqCst), 1);
+    }
 
     #[test]
     fn online_backend_deserializes_from_toml_with_default_prefix() {
