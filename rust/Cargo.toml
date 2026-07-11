@@ -1,6 +1,6 @@
 [package]
 name = "cortex-contract"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 license = "MIT"
 description = "The shared contract for the Cortex real-time ML platform: feature payload, schema, keyspace, codec, and online-store traits."
