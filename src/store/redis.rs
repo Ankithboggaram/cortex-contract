@@ -1,18 +1,17 @@
 //! Redis-backed online store: [`OnlineStoreWriter`] does `SET` + `PUBLISH`,
-//! [`OnlineStoreReader`] does `GET` + `SUBSCRIBE`: relocated from Axon's
-//! original `redis.rs` (the read half) and paired here with a new write half
-//! (Dendrite-sink's role), so both directions share one key format and one
-//! codec and can never drift (PRD.md §4.4, CORTEX.md §4.7).
+//! [`OnlineStoreReader`] does `GET` + `SUBSCRIBE`. Both directions share one
+//! key format and one codec, implemented together here, so a writer and
+//! reader pointed at the same Redis instance can never drift apart.
 //!
 //! ## Zero-alloc asymmetry
 //! [`fetch`](OnlineStoreReader::fetch) decodes into a `Mutex`-guarded scratch
 //! [`FeatureRecord`] reused across calls via `codec::decode_into`, so the read
-//! path is allocation-free after warmup: the guarantee PRD.md §4.4 calls out
-//! explicitly for `fetch`. The lock is only held across the CPU-bound decode
-//! and copy, never across the network round trip. [`write`](OnlineStoreWriter::write)
-//! uses the simpler allocating `codec::encode`: the PRD does not make the same
-//! explicit zero-alloc demand of the write path, and avoiding a second shared
-//! scratch buffer here avoids serializing concurrent writes through one lock.
+//! path is allocation-free after warmup. The lock is only held across the
+//! CPU-bound decode and copy, never across the network round trip.
+//! [`write`](OnlineStoreWriter::write) uses the simpler allocating
+//! `codec::encode` instead: a second shared scratch buffer there would
+//! serialize concurrent writes through one lock, which isn't worth paying
+//! since nothing downstream needs the write path to be allocation-free too.
 
 use std::sync::Mutex;
 use std::time::Duration;

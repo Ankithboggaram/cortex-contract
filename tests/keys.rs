@@ -1,4 +1,5 @@
-//! The implementation checklist's own acceptance test for `keys` (README §Implementation checklist).
+//! Acceptance test for `keys`: pins the exact key and pub/sub channel formats
+//! every reader and writer in the platform must agree on.
 
 use cortex_contract::keys::{DEFAULT_KEY_PREFIX, feature_key, update_channel};
 

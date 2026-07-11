@@ -1,7 +1,7 @@
-//! Protobuf encode/decode: the platform's single serialization chokepoint
-//! (PRD.md §4.3). Every feature payload crosses this module exactly once, on
-//! both Axon's read hot path and Dendrite's write hot path, so its two hot
-//! functions ([`encode_into`], [`decode_into`]) are allocation-free after warmup.
+//! Protobuf encode/decode: the platform's single serialization chokepoint.
+//! Every feature payload crosses this module exactly once, on both Axon's
+//! read hot path and Dendrite's write hot path, so its two hot functions
+//! ([`encode_into`], [`decode_into`]) are allocation-free after warmup.
 
 use prost::Message as _;
 
@@ -45,7 +45,7 @@ pub fn decode(bytes: &[u8]) -> Result<FeatureRecord, CodecError> {
 /// Clears `rec` (retaining its `features` `Vec`'s capacity) and merges
 /// `bytes` into it. Once `rec` has been warmed up by a decode at least as
 /// wide as every subsequent one, this allocates nothing: the guarantee that
-/// keeps Axon's read path allocation-free (PRD.md §6).
+/// keeps Axon's read path allocation-free.
 ///
 /// # Errors
 /// [`CodecError::Decode`] if `bytes` is not a valid encoding of `FeatureRecord`.
@@ -101,7 +101,7 @@ mod tests {
         assert_eq!(rec, fresh);
     }
 
-    /// The zero-alloc guarantee (PRD.md §6): once `rec` is warmed up, decoding
+    /// The zero-alloc guarantee: once `rec` is warmed up, decoding
     /// a same-or-narrower record must not grow capacity or move the allocation.
     #[test]
     fn decode_into_reuses_capacity_after_warmup() {

@@ -1,4 +1,4 @@
-//! The canonical, versioned feature schema (PRD.md §4.1).
+//! The canonical, versioned feature schema.
 //!
 //! The ordered list of `[[feature]]` entries in `feature_schema.toml` **is**
 //! the vector order: index N here == `FeatureRecord.features[N]`, in the
@@ -72,7 +72,7 @@ impl FeatureSchema {
     ///
     /// Checks version before width, so a version mismatch is reported even
     /// when the vector happens to also be the wrong length: the more
-    /// specific, more actionable error of the two (CORTEX.md §3.1).
+    /// specific, more actionable error of the two.
     ///
     /// # Errors
     /// [`SchemaError::VersionMismatch`] or [`SchemaError::WidthMismatch`].

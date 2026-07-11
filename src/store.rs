@@ -1,6 +1,6 @@
 //! Paired online-store traits: `OnlineStoreWriter` (Dendrite-sink) and
 //! `OnlineStoreReader` (Axon), plus the `OnlineBackend` config enum and
-//! feature-gated backend implementations (PRD.md §4.4).
+//! feature-gated backend implementations.
 //!
 //! Paired by design: writer and reader cannot target different backends or
 //! encodings, because both halves of a given backend are implemented in one
@@ -24,8 +24,8 @@ pub mod redis;
 
 /// The non-feature metadata of a stored [`FeatureRecord`], filled in by
 /// [`OnlineStoreReader::fetch`] alongside the feature vector itself: the
-/// header Axon needs for the freshness and schema-version checks
-/// (CORTEX.md §3.1) without decoding a whole `FeatureRecord` at the call site.
+/// header a reader needs to enforce freshness and schema-version checks
+/// without decoding a whole `FeatureRecord` at the call site.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct RecordHeader {
     /// The `schema_version` the stored record was written under.
@@ -65,7 +65,7 @@ pub trait OnlineStoreWriter: Send + Sync {
     /// where the backend can combine them (Redis: `SET` and `PUBLISH`
     /// pipelined into a single network exchange). Backends that can't
     /// combine the two fall back to this default, which simply calls
-    /// [`write`](Self::write) then [`notify`](Self::notify) in sequence —
+    /// [`write`](Self::write) then [`notify`](Self::notify) in sequence,
     /// correct either way, just without the round-trip savings.
     ///
     /// A notification failure alone does not make this return an error: the
@@ -98,7 +98,7 @@ pub trait OnlineStoreReader: Send + Sync {
     /// [`StoreError::ShapeMismatch`] otherwise). On [`FetchResult::Miss`],
     /// neither is modified. Should decode via `crate::codec::decode_into` (or
     /// an equivalent reused-buffer decode) so the fetch path stays
-    /// allocation-free after warmup (PRD.md §6).
+    /// allocation-free after warmup.
     async fn fetch(
         &self,
         entity_id: &str,
@@ -123,9 +123,9 @@ pub trait OnlineStoreReader: Send + Sync {
 
 /// Selects an online-store backend and its connection config.
 ///
-/// Deserializes from the `[store]` / `[online_store]` config section Axon and
-/// Dendrite each own; this enum is the one place that config's shape is
-/// defined, so both sides agree on it (PRD.md §4.4, Axon PRD §A5).
+/// Deserializes from the `[store]` / `[online_store]` config section a
+/// service owns; this enum is the one place that config's shape is defined,
+/// so a writer and reader configured independently still agree on it.
 #[non_exhaustive]
 #[derive(Debug, Clone, serde::Deserialize)]
 #[serde(tag = "type", rename_all = "lowercase")]
@@ -303,8 +303,9 @@ mod tests {
         }
     }
 
-    /// Both traits must be dyn-compatible: Axon holds `Arc<dyn OnlineStoreReader>`,
-    /// Dendrite-sink holds `Arc<dyn OnlineStoreWriter>` (PRD.md §4.4).
+    /// Both traits must be dyn-compatible: a service holds `Arc<dyn
+    /// OnlineStoreReader>` on the read side and `Arc<dyn OnlineStoreWriter>`
+    /// on the write side, choosing the concrete backend at startup.
     #[test]
     fn traits_are_dyn_compatible() {
         fn assert_reader_object_safe(_: &dyn OnlineStoreReader) {}

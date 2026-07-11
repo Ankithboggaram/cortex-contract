@@ -1,4 +1,4 @@
-//! Typed error enums shared across service boundaries (PRD.md §4.5).
+//! Typed error enums shared across service boundaries.
 //!
 //! All enums are `#[non_exhaustive]`: always include a wildcard arm when
 //! matching to remain compatible with future variants.
@@ -32,7 +32,8 @@ pub enum SchemaError {
     Parse(#[from] toml::de::Error),
 
     /// A `FeatureRecord`'s `schema_version` does not match this schema's
-    /// `version`, the train/serve skew guard (CORTEX.md §3.1).
+    /// `version`: the train/serve-skew guard that catches a feature vector
+    /// produced under one schema being validated against another.
     #[error("schema version mismatch: expected {expected}, got {got}")]
     VersionMismatch {
         /// The schema's own `version`.

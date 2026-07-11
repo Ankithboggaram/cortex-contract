@@ -3,8 +3,8 @@ syntax = "proto3";
 package cortex.contract.v1;
 
 // Emitted by Axon for every served prediction (async, fire-and-forget, off the
-// hot path). See PRD.md §3.2 and CORTEX.md §10. A thin predictions-sink lands
-// these in the offline store next to features; joined later with delayed labels
+// hot path). A thin predictions-sink lands these in the offline store next to
+// features; joined later with delayed labels
 // they become the retraining dataset, the drift-detection input, and the
 // shadow-comparison basis. Protobuf so Python monitoring + Synapse read it without drift.
 message PredictionRecord {

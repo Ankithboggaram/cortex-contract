@@ -1,4 +1,4 @@
-//! The online-store keyspace and freshness channel (PRD.md §4.2).
+//! The online-store keyspace and freshness channel.
 //!
 //! The only place these string formats exist in the platform. Dendrite
 //! (writer) and Axon (reader) both call through here instead of hardcoding

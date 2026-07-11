@@ -1,9 +1,8 @@
 //! Round-trip tests for the prost-generated `FeatureRecord` / `PredictionRecord`.
 //!
 //! These exercise plain `prost::Message` encode/decode directly. The `codec`
-//! module (PRD.md §4.3, `src/codec.rs`) wraps the same calls with the
-//! zero-alloc `decode_into` API; this test only proves the generated types
-//! are correct.
+//! module (`src/codec.rs`) wraps the same calls with the zero-alloc
+//! `decode_into` API; this test only proves the generated types are correct.
 
 use cortex_contract::{FeatureRecord, PredictionRecord};
 use prost::Message;
@@ -43,8 +42,9 @@ fn prediction_record_round_trips() {
 }
 
 /// proto3 `float` is unambiguously 32-bit; this pins that guarantee so a future
-/// prost/protoc upgrade can't silently widen it (the exact drift class the
-/// crate exists to prevent; see CORTEX.md §4).
+/// prost/protoc upgrade can't silently widen it (the exact drift class this
+/// crate exists to prevent: naive Python `msgpack` emits 64-bit floats and
+/// would silently break a Rust reader expecting `f32`).
 #[test]
 fn features_are_f32_not_f64() {
     let rec = FeatureRecord {
