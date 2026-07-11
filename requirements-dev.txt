@@ -4,12 +4,20 @@
 #   python3 -m venv .venv
 #   .venv/bin/pip install -r requirements-dev.txt
 #
-# protobuf is the runtime for the protoc-generated *_pb2.py bindings (compiled
-# from proto/), which prove the Rust and Python sides speak byte-identical
-# The reason the payload is proto and not MessagePack is in (CORTEX.md §4).
+# protobuf is the runtime for python/cortex_contract's committed *_pb2.py
+# bindings, which scripts/check_roundtrip.py imports directly to prove the
+# Rust and Python sides speak byte-identical Protobuf.
 protobuf
+
+# grpcio-tools provides grpc_tools.protoc, used by scripts/gen_python_package.sh
+# to regenerate python/cortex_contract/*_pb2.py after a proto change.
+grpcio-tools
 
 # Tooling mirroring Axon's Python toolchain (also available system-wide).
 ruff
 mypy
 pytest
+
+# Type stubs for the protobuf runtime; without these mypy can't resolve the
+# google.protobuf types python/cortex_contract/*_pb2.pyi depends on.
+types-protobuf

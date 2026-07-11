@@ -11,10 +11,14 @@ Cargo.lock
 .cargo/*
 !.cargo/config.toml
 
-# Python cross-language surface: local venv + protoc-generated bindings
+# Python cross-language surface: local venv + protoc-generated bindings.
+# python/cortex_contract/*_pb2.py is the exception: it is the actual content
+# of the distributed Python package, committed on purpose so installing it
+# needs nothing beyond the protobuf runtime.
 .venv/
 __pycache__/
 *_pb2.py
+!/python/cortex_contract/*_pb2.py
 
 # Design / planning docs
 CORTEX.md

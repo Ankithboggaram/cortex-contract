@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "cortex-contract"
+version = "0.1.2"
+description = "Generated Python bindings for the feature and prediction record contract shared across the Cortex platform."
+authors = ["Ankith Boggaram"]
+license = "MIT"
+readme = "README.md"
+packages = [{ include = "cortex_contract" }]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+protobuf = ">=7.35.1,<8.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

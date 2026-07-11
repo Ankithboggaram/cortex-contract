@@ -11,6 +11,36 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+### Added
+
+**Python package**
+
+- `python/`: an installable Python package (`cortex-contract`, importable as `cortex_contract`),
+  with `FeatureRecord` and `PredictionRecord` re-exported at the package root. The two
+  `*_pb2.py` files are committed, not generated at install time, so consuming it needs
+  nothing beyond the `protobuf` runtime, no `protoc`, no sibling checkout of this repo.
+  Regenerate them with `scripts/gen_python_package.sh` after any proto change.
+- Consumers install it as a git dependency pinned to a tag (Poetry:
+  `{ git = "...", tag = "v0.1.2", subdirectory = "python" }`), the same trust model this
+  repo's own Rust consumers already use, rather than each consumer vendoring the `.proto`
+  files and running `protoc` itself.
+- `python/cortex_contract/*_pb2.pyi` type stubs, generated alongside the `.py` files
+  (`scripts/gen_python_package.sh` now also passes `--pyi_out`). Protobuf-generated `.py`
+  modules build their message classes dynamically, which mypy can't see through on its own;
+  without the stub it reports `FeatureRecord`/`PredictionRecord` as missing attributes.
+  `requirements-dev.txt` gains `types-protobuf`, needed to resolve the stubs' own
+  `google.protobuf` references.
+
+### Changed
+
+- `scripts/check_roundtrip.py` now imports the committed `python/cortex_contract` package
+  directly instead of regenerating a throwaway copy via `protoc` into a temp directory. This
+  drops the `protoc` requirement for this check and, more importantly, makes it a staleness
+  check on the actual shipped package: editing a `.proto` file without regenerating
+  `python/cortex_contract/*_pb2.py` now fails this check instead of passing silently against
+  a freshly regenerated copy. `requirements-dev.txt` gains `grpcio-tools`, needed to run
+  `scripts/gen_python_package.sh`.
+
 ## [0.1.1] - 2026-07-10
 
 ### Added

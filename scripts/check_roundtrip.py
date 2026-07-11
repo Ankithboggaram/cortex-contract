@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""Proves Rust and Python decode/encode byte-identical Protobuf.
+"""Proves Rust and the committed Python package decode/encode byte-identical Protobuf.
 
 This is the "Rust <-> Python round-trip test" the implementation checklist
 calls for: cortex-contract's payload is Protobuf specifically so that Synapse
 (Python) and Axon/Dendrite (Rust) never drift on the wire format, in
 particular on `float` (proto `float` is unambiguously 32-bit; naive Python
-`msgpack` is not). This script proves both directions:
+`msgpack` is not). This script imports the actual distributed package
+(python/cortex_contract), not a fresh throwaway regeneration, so it also
+catches the package being left stale after a proto change. It proves both
+directions:
 
   1. Rust encodes the canonical records -> Python decodes them and checks
      every field, comparing floats by their 32-bit bit pattern (not decimal
@@ -15,7 +18,6 @@ particular on `float` (proto `float` is unambiguously 32-bit; naive Python
      asserts that text matches exactly.
 
 Requirements:
-    protoc on PATH (compiles proto/*.proto to a temporary Python module)
     cargo on PATH
     protobuf runtime: pip install -r requirements-dev.txt (or use .venv)
 
@@ -32,6 +34,9 @@ from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(REPO_ROOT / "python"))
+
+from cortex_contract import FeatureRecord, PredictionRecord  # noqa: E402
 
 FEATURE_RECORD: dict[str, Any] = {
     "schema_version": 1,
@@ -90,12 +95,8 @@ def check_tool(name: str) -> None:
         sys.exit(f"error: '{name}' not found on PATH")
 
 
-def rust_to_python(pb2_dir: str, fixture_path: Path) -> None:
+def rust_to_python(fixture_path: Path) -> None:
     """Direction 1: Rust encodes -> Python decodes and checks every field."""
-    sys.path.insert(0, pb2_dir)
-    import feature_record_pb2 as fr_pb2
-    import prediction_record_pb2 as pr_pb2
-
     run(
         [
             "cargo",
@@ -113,7 +114,7 @@ def rust_to_python(pb2_dir: str, fixture_path: Path) -> None:
     fr_bytes, offset = read_framed(data, 0)
     pr_bytes, offset = read_framed(data, offset)
 
-    fr = fr_pb2.FeatureRecord()
+    fr = FeatureRecord()
     fr.ParseFromString(fr_bytes)
     assert fr.schema_version == FEATURE_RECORD["schema_version"]
     assert fr.event_time_ms == FEATURE_RECORD["event_time_ms"]
@@ -121,7 +122,7 @@ def rust_to_python(pb2_dir: str, fixture_path: Path) -> None:
         f32_hex(v) for v in FEATURE_RECORD["features"]
     ]
 
-    pr = pr_pb2.PredictionRecord()
+    pr = PredictionRecord()
     pr.ParseFromString(pr_bytes)
     assert pr.entity_id == PREDICTION_RECORD["entity_id"]
     assert pr.model_name == PREDICTION_RECORD["model_name"]
@@ -140,18 +141,14 @@ def rust_to_python(pb2_dir: str, fixture_path: Path) -> None:
     print("  Rust -> Python: FeatureRecord and PredictionRecord fields match")
 
 
-def python_to_rust(pb2_dir: str, fixture_path: Path) -> None:
+def python_to_rust(fixture_path: Path) -> None:
     """Direction 2: Python encodes -> Rust decodes and prints must match exactly."""
-    sys.path.insert(0, pb2_dir)
-    import feature_record_pb2 as fr_pb2
-    import prediction_record_pb2 as pr_pb2
-
-    fr = fr_pb2.FeatureRecord(
+    fr = FeatureRecord(
         schema_version=FEATURE_RECORD["schema_version"],
         event_time_ms=FEATURE_RECORD["event_time_ms"],
         features=FEATURE_RECORD["features"],
     )
-    pr = pr_pb2.PredictionRecord(
+    pr = PredictionRecord(
         entity_id=PREDICTION_RECORD["entity_id"],
         model_name=PREDICTION_RECORD["model_name"],
         model_version=PREDICTION_RECORD["model_version"],
@@ -207,28 +204,12 @@ def python_to_rust(pb2_dir: str, fixture_path: Path) -> None:
 
 
 def main() -> None:
-    check_tool("protoc")
     check_tool("cargo")
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
-        # protoc mirrors each .proto's path relative to -I into the output dir,
-        # so package cortex.contract.v1 lands under <tmp>/cortex/contract/v1/.
-        pb2_dir = str(tmp_path / "cortex" / "contract" / "v1")
-
-        run(
-            [
-                "protoc",
-                f"--python_out={tmp}",
-                "-I",
-                "proto",
-                "proto/cortex/contract/v1/feature_record.proto",
-                "proto/cortex/contract/v1/prediction_record.proto",
-            ]
-        )
-
-        rust_to_python(pb2_dir, tmp_path / "rust_encoded.bin")
-        python_to_rust(pb2_dir, tmp_path / "python_encoded.bin")
+        rust_to_python(tmp_path / "rust_encoded.bin")
+        python_to_rust(tmp_path / "python_encoded.bin")
 
     print("cross-language round-trip OK")
 

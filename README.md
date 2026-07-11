@@ -32,8 +32,24 @@ just the data types (Synapse's build).
 | `store` (`feature = "redis"`) | `OnlineStoreReader`/`Writer` traits, `RedisOnlineStore`                 |
 | `error`                       | `SchemaError`, `CodecError`, `StoreError`                               |
 
-Python types are generated from the same `.proto` via `protoc`; see `scripts/check_roundtrip.py`
-for the cross-language proof.
+Python bindings are generated from the same `.proto` files and distributed as an installable
+package at `python/`; see `scripts/check_roundtrip.py` for the cross-language proof.
+
+---
+
+## Install (Python)
+
+```toml
+[tool.poetry.dependencies]
+cortex-contract = { git = "https://github.com/Ankithboggaram/cortex-contract.git", tag = "v0.1.2", subdirectory = "python" }
+```
+
+```python
+from cortex_contract import FeatureRecord, PredictionRecord
+```
+
+No `protoc` needed to consume it: the generated bindings are committed inside `python/cortex_contract/`.
+See `python/README.md` for regeneration instructions if the schema changes.
 
 ---
 
