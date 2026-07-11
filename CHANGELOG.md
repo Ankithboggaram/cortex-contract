@@ -40,6 +40,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   `python/cortex_contract/*_pb2.py` now fails this check instead of passing silently against
   a freshly regenerated copy. `requirements-dev.txt` gains `grpcio-tools`, needed to run
   `scripts/gen_python_package.sh`.
+- Moved the Rust crate into `rust/` (`Cargo.toml`, `build.rs`, `src/`, `tests/`, `examples/`,
+  and its own `README.md`), so every language gets its own top-level directory alongside
+  `proto/` (language-neutral, stays at the root) and `python/`, mirroring Michelangelo's own
+  per-language layout. Consumers are unaffected: Cargo's git dependencies resolve a named
+  crate anywhere in the repository tree, so `cortex-contract = { git = "...", tag = "..." }`
+  needs no path change. The root `README.md` becomes a short entry point linking to
+  `rust/README.md` and `python/README.md`.
+- A root, virtual-workspace `Cargo.toml` (`[workspace] members = ["rust"]`, no `[package]`),
+  so bare `cargo test`/`clippy`/`check` invoked from the repo root (as tooling that predates
+  the `rust/` move still does) resolve to the crate instead of failing with "could not find
+  Cargo.toml". `Cargo.lock` and `target/` now live at the workspace root as a result (both
+  already gitignored at any depth).
+- `deny.toml` moved from `rust/` back to the repo root, alongside the new workspace root:
+  `cargo-deny` discovers its config relative to the current directory, not the crate being
+  checked, so once `Cargo.lock`/`target/` moved to the workspace root, `deny.toml` needed to
+  follow or every check would silently fall back to `cargo-deny`'s much stricter built-in
+  default and reject nearly every dependency's license.
 
 ## [0.1.1] - 2026-07-10
 

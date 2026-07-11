@@ -14,6 +14,9 @@ jobs:
   fmt:
     name: Format
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
     steps:
       - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
@@ -28,10 +31,15 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          manifest-path: rust/Cargo.toml
 
   clippy:
     name: Clippy
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
     steps:
       - uses: actions/checkout@v5
       - name: Install protoc
@@ -41,6 +49,7 @@ jobs:
           components: clippy
       - uses: Swatinem/rust-cache@v2
         with:
+          workspaces: rust
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Clippy (all features)
         run: cargo clippy --all-targets --all-features -- -D warnings
@@ -51,6 +60,9 @@ jobs:
   test:
     name: Test (${{ matrix.rust }})
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
     strategy:
       matrix:
         rust: [stable, beta]
@@ -63,6 +75,7 @@ jobs:
           toolchain: ${{ matrix.rust }}
       - uses: Swatinem/rust-cache@v2
         with:
+          workspaces: rust
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Run tests (all features)
         run: cargo test --all-targets --all-features
@@ -73,6 +86,9 @@ jobs:
   test-msrv:
     name: Test (MSRV 1.85)
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
     steps:
       - uses: actions/checkout@v5
       - name: Install protoc
@@ -82,6 +98,7 @@ jobs:
           toolchain: ${{ env.MSRV }}
       - uses: Swatinem/rust-cache@v2
         with:
+          workspaces: rust
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Run tests (all features)
         run: cargo test --all-targets --all-features
@@ -91,6 +108,9 @@ jobs:
   docs:
     name: Docs
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: rust
     steps:
       - uses: actions/checkout@v5
       - name: Install protoc
@@ -98,6 +118,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
+          workspaces: rust
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - name: Check docs
         run: cargo doc --no-deps --all-features
@@ -114,6 +135,7 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
         with:
+          workspaces: rust
           save-if: ${{ github.ref == 'refs/heads/main' }}
       - uses: actions/setup-python@v5
         with:

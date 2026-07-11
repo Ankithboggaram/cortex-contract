@@ -1,4 +1,6 @@
-# Rust build artifacts
+# Rust build artifacts. rust/target is the real one; /target guards against
+# tooling (e.g. an editor's background cargo check) still pointed at the root.
+/rust/target
 /target
 
 # This is a library (no main.rs) consumed as a git dependency by Axon, Dendrite,

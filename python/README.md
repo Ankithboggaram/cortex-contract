@@ -1,5 +1,9 @@
 # cortex-contract (Python)
 
+[![CI](https://github.com/Ankithboggaram/cortex-contract/actions/workflows/ci.yml/badge.svg)](https://github.com/Ankithboggaram/cortex-contract/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](../LICENSE)
+[![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](pyproject.toml)
+
 Generated Python bindings for the feature and prediction record contract shared
 across the Cortex platform. The message definitions here (field names, types,
 and field numbers) match the Rust crate exactly, since those are what determine

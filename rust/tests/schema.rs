@@ -4,7 +4,9 @@
 use cortex_contract::{FeatureSchema, SchemaError};
 
 fn reference_schema_path() -> std::path::PathBuf {
-    std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("feature_schema.toml")
+    // feature_schema.toml is language-neutral and lives at the repo root, one
+    // level up from this crate (rust/), alongside proto/ and python/.
+    std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../feature_schema.toml")
 }
 
 fn load_reference() -> FeatureSchema {

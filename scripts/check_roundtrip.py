@@ -80,8 +80,9 @@ def write_framed(buf: bytearray, message_bytes: bytes) -> None:
 
 
 def run(cmd: list[str], **kwargs) -> subprocess.CompletedProcess:
+    # All calls here are cargo invocations; run them from rust/, the crate root.
     result = subprocess.run(
-        cmd, cwd=REPO_ROOT, capture_output=True, text=True, **kwargs
+        cmd, cwd=REPO_ROOT / "rust", capture_output=True, text=True, **kwargs
     )
     if result.returncode != 0:
         raise RuntimeError(
